@@ -12,13 +12,8 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended: true}));
 
-/*app.use(session({
-	secret:"sauhd8923ye",
-	resave: false,
-	saveUninitialized:false
-}));*/
-
-app.use("/app", authentication);
+//rutas
+//app.use("/app", authentication);
 app.use("/app/user",rUser);
 
 app.post("/login",function (req,res){
@@ -33,6 +28,5 @@ app.post("/login",function (req,res){
 	});
 });
 
-app.listen(80, () => {
-  console.log("Servicio inicializado, escuchando en puerto 80")
-});
+
+module.exports = app;
