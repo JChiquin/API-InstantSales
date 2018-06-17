@@ -1,4 +1,5 @@
 var mongoose = require("mongoose");
+var Publication = require("./Publication");
 
 var Schema = mongoose.Schema;
 
@@ -17,30 +18,33 @@ var pass_validator = {
 
 var userSchemaJSON={
 	name:String,
-	apellido:String,
 	username:{type:String,
 			required:"Usuario requerido"
 			},
 	pass: {type:String,
-			minlength:[8,"Contraseña muy corta"],
 			validate:pass_validator
 		  },
-	age:{type:Number,
-		min:[18,"Debes ser mayor de edad"],
-		max:[100,"Debes estar vivo"]
-		},
 	email: {type:String,
 			required:"Email obligatorio",
 			match: email_match
 			},
-	date_of_birth:Date,
-	sex: {type:String,
+	birthdate:Date,
+	gender: {type:String,
 		  enum: sex_enum
-		 }
-
+		 },
+	phone: String,
+	countPublications: { type: Number, default: 0, min : 0 },
+	countFollowers: { type: Number, default: 0, min : 0 },
+	countFollowing: { type: Number, default: 0, min : 0 },
+	creationDate: { type: Date, default: Date.now},
+	favorites: [{ type: Schema.Types.ObjectId, ref: 'Publication' }],
+	buys: [{ type: Schema.Types.ObjectId, ref: 'Publication' }],
+	profilePicture: { type:String, default: "assets/imgs/icon-user.png"},
+	followers: [{ type: Schema.Types.ObjectId, ref: 'User' }], 
+	following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
 };
 
-var user_schema = new Schema(userSchemaJSON);
+var user_schema = new Schema(userSchemaJSON, {strict:false});
 
 user_schema.virtual("password_confirmation").get(function(){
 	return this.p_c;
