@@ -12,7 +12,6 @@ function getUser(req,res){
 			res.status(404).json({message:"User not found"});
 		else{
 			User.findOne({_id:users.idStringLogged,following:user._id}, '_id',(err,doc)=>{
-				console.log(doc);
 				if(err)
 					res.status(500).json(err);
 				else{
@@ -92,7 +91,7 @@ function updateUserPhotoProfile(req,res){
 function getFriends(req,res){
 	let users=req.body.users;
 	if(req.body.type=="Followers"){
-		User.findById(users.idString,'-_id followers')
+		User.findById(users.userId,'-_id followers')
 		.populate({path:'followers'})
 		.exec((err,user)=>{
 			if(err)
@@ -101,12 +100,12 @@ function getFriends(req,res){
 				res.status(404).json({status:false, message: "No items were found"});
 			else
 				user.followers.forEach(u=>{
-					u.set({ isFollowed : u.following.indexOf(mongoose.Types.ObjectId(users.idStringLogged))!=-1})
+					u.set({ isFollowed : u.followers.indexOf(mongoose.Types.ObjectId(users.userIdLogged))!=-1})
 				});
 				res.status(200).json({status:true,items:user.followers});
 		})
 	}else{ //Following
-		User.findById(users.idString,'-_id following')
+		User.findById(users.userId,'-_id following')
 		.populate({path:'following'})
 		.exec((err,user)=>{
 			if(err)
@@ -115,7 +114,7 @@ function getFriends(req,res){
 				res.status(404).json({status:false, message: "No items were found"});
 			else
 				user.following.forEach(u=>{
-					u.set({ isFollowed : u.followers.indexOf(mongoose.Types.ObjectId(users.idStringLogged))!=-1})
+					u.set({ isFollowed : u.followers.indexOf(mongoose.Types.ObjectId(users.userIdLogged))!=-1})
 				});
 				res.status(200).json({status:true,items:user.following});
 		})
@@ -125,29 +124,31 @@ function getFriends(req,res){
 function addFollower(req,res){
 	let follower = req.body.follower;
 	User.findByIdAndUpdate(follower.followerId,
-		{$addToSet:{following:follower.followedId}}, (err,userUpdate)=>{
+		{$addToSet:{following:follower.followedId}, $inc:{countFollowing:1}}, (err,userUpdate)=>{
 			if(err)
 				res.status(500).json(err);
-			else
+			else{
 				User.findByIdAndUpdate(follower.followedId,
-				{$addToSet:{followers:follower.followerId}},(err2,userUpdate2)=>{
+				{$addToSet:{followers:follower.followerId}, $inc:{countFollowers:1}},(err2,userUpdate2)=>{
 					if(err2)
 						res.status(500).json(err2);
 					else
 						res.status(200).json({ status:true });
 				})
-			})
+			}
+		})
 }
 
 function deleteFollower(req,res){
+	console.log(req.body);
 	let follower = req.body.follower;
 	User.findByIdAndUpdate(follower.followerId,
-		{$pull:{following:follower.followedId}}, (err,userUpdate)=>{
+		{$pull:{following:follower.followedId},$inc:{countFollowing:-1}}, (err,userUpdate)=>{
 			if(err)
 				res.status(500).json(err);
 			else
 				User.findByIdAndUpdate(follower.followedId,
-				{$pull:{followers:follower.followerId}},(err2,userUpdate2)=>{
+				{$pull:{followers:follower.followerId},$inc:{countFollowers:-1}},(err2,userUpdate2)=>{
 					if(err2)
 						res.status(500).json(err2);
 					else
@@ -157,19 +158,31 @@ function deleteFollower(req,res){
 }
 
 function getLikesUser(req,res){
-	Likes.find({userId:req.body.idString},(err,likes)=>{
+	console.log(req.body);
+	Like.find({userPublicationId:req.body.idString})
+	.populate({path:'userId'})
+	.populate({path:'publicationId', populate:{path:'userId'}})
+	.exec((err,likes)=>{
 		console.log(likes)
 		if(err)
 			res.status(500).json(err);
-		else
-			res.status(200).json({status:true,items:likes});
+		else{
+			Like.update({userPublicationId:req.body.idString},
+				{$set: {viewed:true}},
+				{multi:true}, (err,doc)=>{
+					if(err)
+						res.status(500).json(err);
+					else
+						res.status(200).json({status:true,items:likes});
+				});
+
+		}
 	})
 
 }
 
 function areNewLikes(req,res){
-	Likes.find({userId:req.body.idString, viewed:false},(err,likes)=>{
-		console.log(likes)
+	Like.find({userPublicationId:req.body.idString, viewed:false},(err,likes)=>{
 		if(err)
 			res.status(500).json(err);
 		else if (likes.length)

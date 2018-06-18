@@ -22,14 +22,14 @@ app.use("/api/publication",rPublication);
 
 app.post("/login",function (req,res){
 	console.log(req.body);
-	User.findOne({username:req.body.username, pass:req.body.pass},(err,user)=>{
+	User.findOne({username:req.body.username, password:req.body.password},(err,user)=>{
 		if(err)
 			res.status(500).json(err);
 		else if(user){
 			let accessToken = jwt.encode(user, secret);
-			res.status(200).json({ accessToken });
+			res.status(200).json({status:true, items:user, accessToken });
 		}else{
-			res.status(401).json({message: "Datos incorrectos"});
+			res.status(401).json({status:false,message: "Datos incorrectos"});
 		}
 	});
 });

@@ -12,5 +12,6 @@ router.post("/addLike", cPublication.addLike)
 router.post("/deleteLike", cPublication.deleteLike);
 router.post("/addFavorite", cPublication.addFavorite);
 router.post("/deleteFavorite", cPublication.deleteFavorite);
+router.get("/", cPublication.getPublications);
 
 module.exports = router;

@@ -5,13 +5,13 @@ var	Publication = require("../models/Publication"),
 
 function getPublicationsFavorites(req, res){
 	let userIdLogged = mongoose.Types.ObjectId(req.body.idString);
-	User.find({_id:userIdLogged}, '-_id favorites')
-	.populate({path:'favorites'})
+	User.findById(userIdLogged, '-_id favorites')
+	.populate({path:'favorites', populate:{path:'userId'}})
 	.exec((err,publications)=>{
-		publications = publications[0].favorites;
+		publications = publications.favorites;
 		if(err)
 			res.status(500).json({err});
-		else if(!publications.length)
+		else if(!publications)
 			res.status(404).json({message: "No hay publicaciones"})
 		else{
 			Like.find({"userId":userIdLogged}, '-_id publicationId', (err,likes)=>{
@@ -19,9 +19,10 @@ function getPublicationsFavorites(req, res){
 					likes=likes.map(l=>String(l.publicationId));
 					publications.forEach(p=>{
 						p.set('liked', likes.indexOf(String(p._id))!=-1);
-						p.set('followed', user.favorites.indexOf(p._id)!=-1);
+						if(user)
+							p.set('favorited', user.favorites.indexOf(p._id)!=-1);
 					})
-					res.status(200).json(publications);
+					res.status(200).json({status:true,items:publications});
 				})
 			})
 		}
@@ -51,8 +52,8 @@ function deleteLike(req,res){
 }
 
 function addFavorite(req,res){
-	User.update({_id:req.body.userId},
-				{ $addToSet : { favorites: req.body.publicationId } },
+	User.update({_id:req.body.favorite.userId},
+				{ $addToSet : { favorites: req.body.favorite.publicationId } },
 				(err,user)=>{
 		if(err)
 			res.status(500).json(err);
@@ -62,7 +63,7 @@ function addFavorite(req,res){
 }
 
 function deleteFavorite(req,res){
-	User.update({_id:req.body.userId},{ $pull : { favorites: req.body.publicationId } }, (err,user)=>{
+	User.update({_id:req.body.favorite.userId},{ $pull : { favorites: req.body.favorite.publicationId } }, (err,user)=>{
 		if(err)
 			res.status(500).json(err);
 		else
@@ -86,9 +87,9 @@ function getPublicationsUser(req,res){
 					likes=likes.map(l=>String(l.publicationId));
 					publications.forEach(p=>{
 						p.set('liked', likes.indexOf(String(p._id))!=-1);
-						p.set('followed', user.favorites.indexOf(p._id)!=-1);
+						p.set('favorited', user.favorites.indexOf(p._id)!=-1);
 					})
-					res.status(200).json(publications);
+					res.status(200).json({status:true,items:publications});
 				})
 			})
 		}
@@ -110,9 +111,9 @@ function getPublicationsHome(req,res){
 					likes=likes.map(l=>String(l.publicationId));
 					publications.forEach(p=>{
 						p.set('liked', likes.indexOf(String(p._id))!=-1);
-						p.set('followed', user.favorites.indexOf(p._id)!=-1);
+						p.set('favorited', user.favorites.indexOf(p._id)!=-1);
 					})
-					res.status(200).json(publications);
+					res.status(200).json({status:true,items:publications});
 				})
 			})
 		}
@@ -120,14 +121,24 @@ function getPublicationsHome(req,res){
 }
 
 function addPublication(req,res){
-	console.log(req.body);
-	let publication = new Publication(req.body);
 
+	let publication = new Publication(req.body.publication);
 	publication.save()
 	.then(p => {
-		res.status(200).json(p);
+		User.findByIdAndUpdate(p.userId,{$inc:{countPublications:1}}, (err,user)=>{
+			if(err)
+				res.status(500).json(err);
+			else
+				res.status(200).json(p);				
+		})
 	})
 	.catch(err=>res.status(500).json(err));
+}
+
+function getPublications(req,res){
+	Publication.find({},(err,publications)=>{
+		res.json({status:true,items:publications});
+	})
 }
 
 module.exports = {
@@ -138,5 +149,6 @@ module.exports = {
 	deleteFavorite,
 	addPublication,
 	getPublicationsHome,
-	getPublicationsUser
+	getPublicationsUser,
+	getPublications
 }
