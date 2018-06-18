@@ -4,7 +4,8 @@ var express = require("express"),
 var router = express.Router();
 
 router.post("/getUser",cUser.getUser);
-
+router.post("/getUserByUsername",cUser.getUserByUsername);
+router.post("/getUserByEmail",cUser.getUserByEmail);
 router.get("/",cUser.getUsers);
 
 
