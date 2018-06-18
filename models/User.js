@@ -11,7 +11,7 @@ var sex_enum= {
 };
 var pass_validator = {
 	validator:function(p){
-		return this.password_confirmation==p;
+		return this.passwordconfirm==p;
 	},
 	message:"Contraseñas deben coincidir"
 };
@@ -21,7 +21,7 @@ var userSchemaJSON={
 	username:{type:String,
 			required:"Usuario requerido"
 			},
-	pass: {type:String,
+	password: {type:String,
 			validate:pass_validator
 		  },
 	email: {type:String,
@@ -41,12 +41,17 @@ var userSchemaJSON={
 	buys: [{ type: Schema.Types.ObjectId, ref: 'Publication' }],
 	profilePicture: { type:String, default: "assets/imgs/icon-user.png"},
 	followers: [{ type: Schema.Types.ObjectId, ref: 'User' }], 
-	following: [{ type: Schema.Types.ObjectId, ref: 'User' }]
+	following: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+	isPublic: {type: Boolean, default: false},
+	bio: String,
+	facebook: String,
+	instagram: String,
+	ocupation: String
 };
 
 var user_schema = new Schema(userSchemaJSON, {strict:false});
 
-user_schema.virtual("password_confirmation").get(function(){
+user_schema.virtual("passwordconfirm").get(function(){
 	return this.p_c;
 }).set(function(password){
 	this.p_c=password;
