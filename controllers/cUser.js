@@ -42,10 +42,24 @@ function getUserByUsername(req,res){
 		}
 
 	})
+}
 
+function getUserByEmail(req,res){
+	User.findOne({email:req.body.email},'_id',(err,user)=>{
+		if(err)
+			res.status(500).json(err);
+		else if (!user){
+			res.status(404).json({status:false, message: "No items were found"})
+		}else{
+			user.set({isFollowed : true});
+			res.status(200).json({status:true,items:true});
+		}
+	})
 }
 
 module.exports = {
 	getUser,
-	getUsers
+	getUsers,
+	getUserByEmail,
+	getUserByUsername
 }
