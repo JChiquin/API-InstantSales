@@ -140,12 +140,16 @@ function addPublication(req,res){
 		    Publication.findByIdAndUpdate(p._id,{$set:{photo:"http://localhost:3000/imgs/publications/"+p._id+"/"+p._id+".jpeg"}}, (err,pUpdate)=>{
 		    	if(err)
 		    		res.status(500).json(err);
-		    	else
-		    		res.status(200).json(pUpdate);
+		    	else{
+		    		User.findByIdAndUpdate(p.userId,{$inc:{countPublications:1}},(err,u)=>{
+		    			if(err)
+		    				res.status(500).json(err);	
+		    			else
+		    				res.status(200).json(pUpdate);
+		    		})
+		    	}
 		    })
 		});
-		
-		User.findByIdAndUpdate(p.userId,{$inc:{countPublications:1}})
 	})
 	.catch(err=>res.status(500).json(err));
 
