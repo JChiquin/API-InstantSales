@@ -132,12 +132,12 @@ function addPublication(req,res){
 
 	publication.save()
 	.then(p => {
-		let dir = "./public/imgs/publications"+p._id;
+		let dir = "./public/imgs/publications/"+p._id;
 		fs.mkdirSync(dir);
-		ba64.writeImage(dir+"/"+p.name, photoBase64, function(err){
+		ba64.writeImage(dir+"/"+p._id, photoBase64, function(err){
 		    if (err) throw err;
 		    console.log("Image saved successfully");
-		    Publication.findByIdAndUpdate(p._id,{$set:{photo:"http://localhost:3000/imgs/publications/"+p._id+"/"+p.name+".jpeg"}}, (err,pUpdate)=>{
+		    Publication.findByIdAndUpdate(p._id,{$set:{photo:"http://localhost:3000/imgs/publications/"+p._id+"/"+p._id+".jpeg"}}, (err,pUpdate)=>{
 		    	if(err)
 		    		res.status(500).json(err);
 		    	else
