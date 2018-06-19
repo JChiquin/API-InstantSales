@@ -114,7 +114,8 @@ function getPublicationsHome(req,res){
 					likes=likes.map(l=>String(l.publicationId));
 					publications.forEach(p=>{
 						p.set('liked', likes.indexOf(String(p._id))!=-1);
-						p.set('favorited', user.favorites.indexOf(p._id)!=-1);
+						if(user)
+							p.set('favorited', user.favorites.indexOf(p._id)!=-1);
 					})
 					res.status(200).json({status:true,items:publications});
 				})
