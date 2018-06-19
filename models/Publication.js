@@ -9,7 +9,7 @@ var publicationSchemaJSON={
     contact: String,
     creationDate: {type: Date, default: Date.now},
     userId: {type: Schema.Types.ObjectId, ref: 'User'},
-    photo: {type:String, default: "http://209.156.175.205/imgnucli/5b12107ea398fb25ca65b383/5b12107ee07ae.png"},
+    photo: {type:String},
     price: Number,
     stock: Number,
 

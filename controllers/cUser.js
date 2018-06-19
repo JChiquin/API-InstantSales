@@ -3,6 +3,9 @@ var	Publication = require("../models/Publication"),
 	mongoose = require("mongoose"),
 	User = require("../models/User");
 
+let ba64 = require("ba64"),
+	fs = require('fs');
+
 function getUser(req,res){
 	let users = req.body.user;
 	User.findById(users.idString, (err,user)=>{
@@ -66,6 +69,8 @@ function addUser(req,res) {
 						});
 	user.save()
 	.then((u)=>{
+		let dir = "./public/imgs/users/"+u._id;
+		fs.mkdirSync(dir);
 		res.status(200).json({status:true,items:u});
 	})
 	.catch((err)=>{
@@ -84,7 +89,18 @@ function updateUser(req,res){
 }
 
 function updateUserPhotoProfile(req,res){
-
+	let user = req.body.user;
+	let dir = "./public/imgs/users/"+user._id;
+	ba64.writeImage(dir+"/"+user._id, user.profilePicture, function(err){
+	    if (err) throw err;
+	    console.log("Image saved successfully");
+	    User.findByIdAndUpdate(user._id,{$set:{profilePicture:"http://localhost:3000/imgs/users/"+user._id+"/"+user._id+".jpeg"}},(err,u)=>{
+	    	if(err)
+	    		res.status(500).json({status:false,message:err});
+	    	else
+	    		res.status(200).json({status:true,items:u});
+	    })
+	});
 }
 
 //MODIFICAR EL PROVIDER
@@ -199,6 +215,7 @@ module.exports = {
 	getUsers,
 	getUserByEmail,
 	getUserByUsername,
+	updateUserPhotoProfile,
 	addUser,
 	updateUser,
 	getFriends,

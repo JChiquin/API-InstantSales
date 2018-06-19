@@ -7,6 +7,7 @@ router.post("/getUser",cUser.getUser);
 router.post("/addUser",cUser.addUser);
 router.post("/getFriends",cUser.getFriends);
 router.post("/updateUser",cUser.updateUser);
+router.post("/updateUserPhotoProfile",cUser.updateUserPhotoProfile);
 router.post("/getUserByUsername",cUser.getUserByUsername);
 router.post("/getUserByEmail",cUser.getUserByEmail);
 router.post("/addFollower",cUser.addFollower);

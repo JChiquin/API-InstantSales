@@ -3,6 +3,9 @@ var	Publication = require("../models/Publication"),
 	mongoose = require("mongoose"),
 	User = require("../models/User");
 
+let ba64 = require("ba64"),
+	fs = require('fs');
+
 function getPublicationsFavorites(req, res){
 	let userIdLogged = mongoose.Types.ObjectId(req.body.idString);
 	User.findById(userIdLogged, '-_id favorites')
@@ -122,17 +125,31 @@ function getPublicationsHome(req,res){
 
 function addPublication(req,res){
 
-	let publication = new Publication(req.body.publication);
+	let body = req.body.publication;
+	let photoBase64 = body.photo;
+	delete body.photo;
+	let publication = new Publication(body);
+
 	publication.save()
 	.then(p => {
-		User.findByIdAndUpdate(p.userId,{$inc:{countPublications:1}}, (err,user)=>{
-			if(err)
-				res.status(500).json(err);
-			else
-				res.status(200).json(p);				
-		})
+		let dir = "./public/imgs/publications"+p._id;
+		fs.mkdirSync(dir);
+		ba64.writeImage(dir+"/"+p.name, photoBase64, function(err){
+		    if (err) throw err;
+		    console.log("Image saved successfully");
+		    Publication.findByIdAndUpdate(p._id,{$set:{photo:"http://localhost:3000/imgs/publications/"+p._id+"/"+p.name+".jpeg"}}, (err,pUpdate)=>{
+		    	if(err)
+		    		res.status(500).json(err);
+		    	else
+		    		res.status(200).json(pUpdate);
+		    })
+		});
+		
+		User.findByIdAndUpdate(p.userId,{$inc:{countPublications:1}})
 	})
 	.catch(err=>res.status(500).json(err));
+
+	
 }
 
 function getPublications(req,res){
