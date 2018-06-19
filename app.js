@@ -34,5 +34,9 @@ app.post("/login",function (req,res){
 	});
 });
 
+app.use((req,res)=>{
+	res.status(404);
+});
+
 
 module.exports = app;
