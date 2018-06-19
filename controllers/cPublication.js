@@ -1,6 +1,7 @@
 var	Publication = require("../models/Publication"),
 	Like = require("../models/Like"),
 	mongoose = require("mongoose"),
+	config = require('../config'),
 	User = require("../models/User");
 
 let ba64 = require("ba64"),
@@ -114,8 +115,7 @@ function getPublicationsHome(req,res){
 					likes=likes.map(l=>String(l.publicationId));
 					publications.forEach(p=>{
 						p.set('liked', likes.indexOf(String(p._id))!=-1);
-						if(user)
-							p.set('favorited', user.favorites.indexOf(p._id)!=-1);
+						p.set('favorited', (user ? (user.favorites.indexOf(p._id)!=-1):false));
 					})
 					res.status(200).json({status:true,items:publications});
 				})
@@ -138,7 +138,7 @@ function addPublication(req,res){
 		ba64.writeImage(dir+"/"+p._id, photoBase64, function(err){
 		    if (err) throw err;
 		    console.log("Image saved successfully");
-		    Publication.findByIdAndUpdate(p._id,{$set:{photo:"http://localhost:3000/imgs/publications/"+p._id+"/"+p._id+".jpeg"}}, (err,pUpdate)=>{
+		    Publication.findByIdAndUpdate(p._id,{$set:{photo:config.url+"imgs/publications/"+p._id+"/"+p._id+".jpeg"}}, (err,pUpdate)=>{
 		    	if(err)
 		    		res.status(500).json(err);
 		    	else{

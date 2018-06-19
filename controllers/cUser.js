@@ -1,6 +1,7 @@
 var	Publication = require("../models/Publication"),
 	Like = require("../models/Like"),
 	mongoose = require("mongoose"),
+	config = require('../config'),
 	User = require("../models/User");
 
 let ba64 = require("ba64"),
@@ -94,7 +95,7 @@ function updateUserPhotoProfile(req,res){
 	ba64.writeImage(dir+"/"+user._id, user.profilePicture, function(err){
 	    if (err) throw err;
 	    console.log("Image saved successfully");
-	    User.findByIdAndUpdate(user._id,{$set:{profilePicture:"http://localhost:3000/imgs/users/"+user._id+"/"+user._id+".jpeg"}},(err,u)=>{
+	    User.findByIdAndUpdate(user._id,{$set:{profilePicture:config.url+"imgs/users/"+user._id+"/"+user._id+".jpeg"}},(err,u)=>{
 	    	if(err)
 	    		res.status(500).json({status:false,message:err});
 	    	else
