@@ -4,7 +4,6 @@ var express = require("express"),
 var router = express.Router();
 
 router.post("/getUser",cUser.getUser);
-router.post("/addUser",cUser.addUser);
 router.post("/getFriends",cUser.getFriends);
 router.post("/updateUser",cUser.updateUser);
 router.post("/updateUserPhotoProfile",cUser.updateUserPhotoProfile);

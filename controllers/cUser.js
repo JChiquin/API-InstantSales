@@ -5,7 +5,25 @@ var	Publication = require("../models/Publication"),
 	User = require("../models/User");
 
 let ba64 = require("ba64"),
+	jwt = require('jwt-simple'),
 	fs = require('fs');
+
+
+let secret = '712386210123';
+
+function login(req,res){
+	console.log(req.body);
+	User.findOne({username:req.body.username, password:req.body.password},(err,user)=>{
+		if(err)
+			res.status(500).json(err);
+		else if(user){
+			let accessToken = jwt.encode(user, secret);
+			res.status(200).json({status:true, items:user, accessToken });
+		}else{
+			res.status(401).json({status:false,message: "Datos incorrectos"});
+		}
+	});
+}
 
 function getUser(req,res){
 	let users = req.body.user;
@@ -223,5 +241,6 @@ module.exports = {
 	addFollower,
 	deleteFollower,
 	getLikesUser,
-	areNewLikes
+	areNewLikes,
+	login
 }

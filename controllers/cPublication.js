@@ -102,6 +102,7 @@ function getPublicationsUser(req,res){
 
 function getPublicationsHome(req,res){
 	let userIdLogged = mongoose.Types.ObjectId(req.body.idString);
+	console.log(req.body);
 	Publication.find()
 	.populate({path:'userId'})
 	.exec((err,publications)=>{
@@ -125,7 +126,7 @@ function getPublicationsHome(req,res){
 }
 
 function addPublication(req,res){
-
+	console.log(req.body);
 	let body = req.body.publication;
 	let photoBase64 = body.photo;
 	delete body.photo;
